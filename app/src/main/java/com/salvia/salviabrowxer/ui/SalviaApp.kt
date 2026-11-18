@@ -355,40 +355,53 @@ fun SalviaApp(
                     }
 
                     // Toast Pill Banner
-                    AnimatedVisibility(
-                        visible = state.toastMessage != null,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
+                    ToastOverlayBanner(
+                        message = state.toastMessage,
+                        onDismiss = { viewModel.dismissToast() },
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .navigationBarsPadding()
                             .padding(horizontal = 20.dp, vertical = 72.dp)
-                    ) {
-                        state.toastMessage?.let { msg ->
-                            Surface(
-                                shape = RoundedCornerShape(16.dp),
-                                color = SalviaElevated,
-                                border = BorderStroke(1.dp, SalviaBorder),
-                                shadowElevation = 10.dp,
-                                modifier = Modifier
-                                    .clickable { viewModel.dismissToast() }
-                                    .testTag("toast_banner")
-                            ) {
-                                Text(
-                                    text = msg,
-                                    color = SalviaPearl,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
-                                )
-                            }
-                        }
-                    }
+                    )
 
                     // Startup Splash Overlay
                     if (state.showSplash) {
                         AppSplashOverlay(onFinished = { viewModel.dismissSplash() })
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ToastOverlayBanner(
+    message: String?,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AnimatedVisibility(
+        visible = message != null,
+        enter = fadeIn(),
+        exit = fadeOut(),
+        modifier = modifier
+    ) {
+        message?.let { msg ->
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = SalviaElevated,
+                border = BorderStroke(1.dp, SalviaBorder),
+                shadowElevation = 10.dp,
+                modifier = Modifier
+                    .clickable(onClick = onDismiss)
+                    .testTag("toast_banner")
+            ) {
+                Text(
+                    text = msg,
+                    color = SalviaPearl,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                )
             }
         }
     }
