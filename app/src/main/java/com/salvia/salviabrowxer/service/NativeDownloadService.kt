@@ -437,12 +437,14 @@ class NativeDownloadService : Service() {
             if (job.paused.get()) {
                 // Keep the wifi-specific status when the network guard paused this job, otherwise
                 // coming back online could never find it for auto-resume.
+                val pausedEvt = JSONObject().put("type", "paused").put("id", job.id)
                 if (job.pausedForWifi.get()) {
                     DownloadQueueStore.updateStatus(this, job.id, DownloadQueueStore.STATUS_PAUSED_WIFI)
+                    pausedEvt.put("reason", "wifi")
                 } else {
                     DownloadQueueStore.updateStatus(this, job.id, DownloadQueueStore.STATUS_PAUSED)
                 }
-                NativeDownloadBus.emit(JSONObject().put("type", "paused").put("id", job.id))
+                NativeDownloadBus.emit(pausedEvt)
                 return
             }
             if (job.cancelled.get()) {
@@ -480,6 +482,7 @@ class NativeDownloadService : Service() {
                     .put("blobUrl", localPlaybackUrl)
                     .put("finalSize", finalSize)
                     .put("mimeType", finalMime)
+                    .put("filePath", finalFile.absolutePath)
                     .put("nativeUri", publishedUri ?: MediaPublisher.providerUriForInternalFile(this, finalFile).toString())
             )
             val openUri = publishedUri?.let { Uri.parse(it) }
@@ -505,12 +508,14 @@ class NativeDownloadService : Service() {
             job.paused.get() -> {
                 // Keep the wifi-specific status when the network guard paused this job, otherwise
                 // coming back online could never find it for auto-resume.
+                val pausedEvt = JSONObject().put("type", "paused").put("id", job.id)
                 if (job.pausedForWifi.get()) {
                     DownloadQueueStore.updateStatus(this, job.id, DownloadQueueStore.STATUS_PAUSED_WIFI)
+                    pausedEvt.put("reason", "wifi")
                 } else {
                     DownloadQueueStore.updateStatus(this, job.id, DownloadQueueStore.STATUS_PAUSED)
                 }
-                NativeDownloadBus.emit(JSONObject().put("type", "paused").put("id", job.id))
+                NativeDownloadBus.emit(pausedEvt)
             }
             job.cancelled.get() -> {
                 outFile.delete()

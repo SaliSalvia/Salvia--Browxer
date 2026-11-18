@@ -33,30 +33,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ---------- Web UI -> Android assets ----------
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-
-      - name: Install web dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Type-check web code (advisory)
-        continue-on-error: true
-        run: npx tsc --noEmit
-
-      - name: Build web bundle into Android assets
-        run: |
-          # `vite build` directly: the type-check above is advisory and must not block the APK.
-          npx vite build
-          rm -rf app/src/main/assets/www
-          mkdir -p app/src/main/assets/www
-          cp -r dist/. app/src/main/assets/www/
-          test -f app/src/main/assets/www/index.html || { echo "assets/www/index.html missing"; exit 1; }
-          echo "Bundled web files:"; find app/src/main/assets/www -type f | head -40
-
       # ---------- Android ----------
       - name: Set up JDK 17
         uses: actions/setup-java@v4

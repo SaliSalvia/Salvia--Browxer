@@ -73,7 +73,7 @@ class BrowserHost(
     private val activity: Activity,
     private val container: FrameLayout,
     private val fullscreenHolder: FrameLayout,
-    private val routing: TouchRoutingLayout,
+    private val routing: TouchRoutingLayout? = null,
     private val delegate: BrowserHostDelegate,
     private val emit: (JSONObject) -> Unit
 ) {
@@ -102,14 +102,13 @@ class BrowserHost(
     private var cookiesEnabled = true
     private var textZoom = 100
     private var darkPages = false
+    @Volatile private var cleartextAllowed = false
 
     private var customView: View? = null
     private var customCallback: WebChromeClient.CustomViewCallback? = null
 
     /** Hosts the user explicitly allowed through the SSL warning during this session. */
     private val sslAllowedHosts = Collections.synchronizedSet(HashSet<String>())
-
-    private var pendingFileChooser: ValueCallback<Array<android.net.Uri>>? = null
 
     private val supportsDocumentStart: Boolean = try {
         WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)
@@ -147,9 +146,14 @@ class BrowserHost(
                 tab.currentUrl = url
                 tab.webView.loadUrl(url)
             }
+        } else {
+            tab.adBlock = adBlock
+            if (tab.desktop != desktop) applyDesktop(tab, desktop)
         }
         activate(tab)
     }
+
+    fun hasTab(tabId: String): Boolean = tabs.containsKey(tabId)
 
     /** Loads a URL in a tab without changing what is on screen. */
     fun load(tabId: String, url: String, desktop: Boolean, adBlock: Boolean, isPrivate: Boolean) {
@@ -163,6 +167,34 @@ class BrowserHost(
             tab.currentUrl = url
             tab.webView.loadUrl(url)
         }
+    }
+
+    fun canGoBack(tabId: String): Boolean = tabs[tabId]?.webView?.canGoBack() == true
+
+    fun canGoForward(tabId: String): Boolean = tabs[tabId]?.webView?.canGoForward() == true
+
+    fun goBack(tabId: String): Boolean {
+        val wv = tabs[tabId]?.webView ?: return false
+        return if (wv.canGoBack()) {
+            wv.goBack()
+            true
+        } else {
+            false
+        }
+    }
+
+    fun goForward(tabId: String): Boolean {
+        val wv = tabs[tabId]?.webView ?: return false
+        return if (wv.canGoForward()) {
+            wv.goForward()
+            true
+        } else {
+            false
+        }
+    }
+
+    fun setAdBlock(tabId: String, adBlock: Boolean) {
+        tabs[tabId]?.adBlock = adBlock
     }
 
     fun reload(tabId: String) {
@@ -185,7 +217,7 @@ class BrowserHost(
     }
 
     fun hide() {
-        routing.browserVisible = false
+        routing?.browserVisible = false
         container.visibility = View.GONE
         val id = activeId
         if (id != null) tabs[id]?.webView?.onPause()
@@ -198,14 +230,14 @@ class BrowserHost(
         val width = (widthCss * density).toInt()
         val height = (heightCss * density).toInt()
         bounds.set(left, top, left + width, top + height)
-        routing.browserRect = Rect(bounds)
+        routing?.browserRect = Rect(bounds)
         for (tab in tabs.values) {
             tab.webView.layoutParams = boundsLayoutParams()
         }
     }
 
     fun setInteraction(shield: Boolean, hotRectsJson: String) {
-        routing.shield = shield
+        routing?.shield = shield
         val list = ArrayList<Rect>()
         try {
             val arr = JSONArray(hotRectsJson)
@@ -223,7 +255,7 @@ class BrowserHost(
             }
         } catch (ignored: Exception) {
         }
-        routing.hotRects = list
+        routing?.hotRects = list
     }
 
     fun find(tabId: String, query: String, backwards: Boolean) {
@@ -243,11 +275,18 @@ class BrowserHost(
         }
     }
 
-    fun applySettings(javaScript: Boolean, cookies: Boolean, zoomPercent: Int, darkPagesAllowed: Boolean) {
+    fun applySettings(
+        javaScript: Boolean,
+        cookies: Boolean,
+        zoomPercent: Int,
+        darkPagesAllowed: Boolean,
+        allowCleartext: Boolean = cleartextAllowed
+    ) {
         jsEnabled = javaScript
         cookiesEnabled = cookies
         textZoom = zoomPercent.coerceIn(50, 200)
         darkPages = darkPagesAllowed
+        cleartextAllowed = allowCleartext
         if (!activeTabIsPrivate()) {
             CookieManager.getInstance().setAcceptCookie(cookies)
         }
@@ -388,7 +427,7 @@ class BrowserHost(
             }
         }
         container.visibility = View.VISIBLE
-        routing.browserVisible = true
+        routing?.browserVisible = true
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -407,7 +446,7 @@ class BrowserHost(
             }
         }
 
-        wv.setBackgroundColor(Color.WHITE)
+        wv.setBackgroundColor(Color.BLACK)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             wv.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES)
         }
@@ -433,6 +472,59 @@ class BrowserHost(
         wv.addJavascriptInterface(DetectorBridge(tab), "SalviaBrowserBridge")
         wv.webViewClient = BrowserClient(tab)
         wv.webChromeClient = BrowserChrome(tab)
+
+        wv.setOnLongClickListener { view ->
+            val webView = view as? WebView ?: return@setOnLongClickListener false
+            val hit = webView.hitTestResult
+            val extra = hit.extra?.takeIf { it.startsWith("http://") || it.startsWith("https://") }
+            when (hit.type) {
+                WebView.HitTestResult.SRC_ANCHOR_TYPE -> {
+                    if (extra == null) return@setOnLongClickListener false
+                    post(
+                        JSONObject()
+                            .put("type", "context-menu")
+                            .put("tabId", tab.id)
+                            .put("linkUrl", extra)
+                    )
+                    true
+                }
+                WebView.HitTestResult.IMAGE_TYPE -> {
+                    if (extra == null) return@setOnLongClickListener false
+                    post(
+                        JSONObject()
+                            .put("type", "context-menu")
+                            .put("tabId", tab.id)
+                            .put("imageUrl", extra)
+                    )
+                    true
+                }
+                WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
+                    val hrefHandler = Handler(Looper.getMainLooper()) { msg ->
+                        val data = msg.data
+                        val linkUrl = data?.getString("url")?.takeIf {
+                            it.startsWith("http://") || it.startsWith("https://")
+                        }
+                        val imageUrl = data?.getString("src")?.takeIf {
+                            it.startsWith("http://") || it.startsWith("https://")
+                        } ?: extra
+                        val title = data?.getString("title")?.takeIf { it.isNotBlank() }
+                        if (linkUrl != null || imageUrl != null) {
+                            val obj = JSONObject()
+                                .put("type", "context-menu")
+                                .put("tabId", tab.id)
+                            if (linkUrl != null) obj.put("linkUrl", linkUrl)
+                            if (imageUrl != null) obj.put("imageUrl", imageUrl)
+                            if (title != null) obj.put("title", title)
+                            post(obj)
+                        }
+                        true
+                    }
+                    webView.requestFocusNodeHref(hrefHandler.obtainMessage())
+                    true
+                }
+                else -> false
+            }
+        }
 
         wv.setDownloadListener { url, _, contentDisposition, mimeType, contentLength ->
             val name = URLUtil.guessFileName(url, contentDisposition, mimeType)
@@ -699,6 +791,15 @@ class BrowserHost(
             val req = request ?: return false
             val scheme = req.url.scheme?.lowercase() ?: return false
             if (scheme == "http" || scheme == "https") {
+                if (scheme == "http" && req.isForMainFrame && !cleartextAllowed) {
+                    post(
+                        JSONObject()
+                            .put("type", "cleartext-blocked")
+                            .put("tabId", tab.id)
+                            .put("url", req.url.toString())
+                    )
+                    return true
+                }
                 val host = req.url.host
                 // Google blocks sign-in from embedded WebViews; using the desktop UA for the
                 // login screens themselves lets most flows through. Restore on leaving.
@@ -802,6 +903,8 @@ class BrowserHost(
                     .put("url", u)
                     .put("title", view?.title ?: "")
                     .put("blocked", tab.blockedCount.getAndSet(0))
+                    .put("canGoBack", view?.canGoBack() == true)
+                    .put("canGoForward", view?.canGoForward() == true)
             )
         }
 
@@ -809,7 +912,14 @@ class BrowserHost(
             val u = url ?: return
             if (u.startsWith("about:")) return
             tab.currentUrl = u
-            post(JSONObject().put("type", "url").put("tabId", tab.id).put("url", u))
+            post(
+                JSONObject()
+                    .put("type", "url")
+                    .put("tabId", tab.id)
+                    .put("url", u)
+                    .put("canGoBack", view?.canGoBack() == true)
+                    .put("canGoForward", view?.canGoForward() == true)
+            )
         }
 
         override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
@@ -1084,25 +1194,9 @@ class BrowserHost(
             fileChooserParams: FileChooserParams?
         ): Boolean {
             val callback = filePathCallback ?: return false
-            val previous = pendingFileChooser
-            if (previous != null) {
-                // A picker is already open; Chrome answers the old request with null.
-                previous.onReceiveValue(null)
-            }
-            pendingFileChooser = callback
             val acceptTypes = fileChooserParams?.acceptTypes ?: emptyArray()
             val multiple = fileChooserParams?.mode == FileChooserParams.MODE_OPEN_MULTIPLE
-            val ok = delegate.openFileChooser(callback, acceptTypes, multiple)
-            if (!ok) {
-                pendingFileChooser = null
-            }
-            return ok
-        }
-
-        fun notifyFileChooserResult(uris: Array<android.net.Uri>?) {
-            val callback = pendingFileChooser
-            pendingFileChooser = null
-            callback?.onReceiveValue(uris)
+            return delegate.openFileChooser(callback, acceptTypes, multiple)
         }
 
         // ------------------------------------------------------------ popups / new windows

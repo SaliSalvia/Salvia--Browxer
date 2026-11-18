@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Subtle outer orbital halo -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,24 A30,30 0 1,1 53.99,24 Z"
+        android:strokeColor="#8F6BFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="3.2" />
+    <!-- Bright cyan crescent sweep -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M31,36 A28,28 0 0,1 77,36"
+        android:strokeColor="#4CC4FF"
+        android:strokeLineCap="round"
+        android:strokeWidth="3.6" />
+    <!-- Gold orbital star dot -->
+    <path
+        android:fillColor="#F2CD72"
+        android:pathData="M78,35 m-3.2,0 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0" />
+    <!-- Bold filled download shaft + chevron -->
+    <path
+        android:fillColor="#F4F2FF"
+        android:pathData="M50,35 L58,35 L58,54 L65.5,54 L54,67.5 L42.5,54 L50,54 Z" />
+    <!-- Crisp cyan tray bar under arrow -->
+    <path
+        android:fillColor="#4CC4FF"
+        android:pathData="M39,71.5 L69,71.5 C70.4,71.5 71.5,72.6 71.5,74 C71.5,75.4 70.4,76.5 69,76.5 L39,76.5 C37.6,76.5 36.5,75.4 36.5,74 C36.5,72.6 37.6,71.5 39,71.5 Z" />
+</vector>
