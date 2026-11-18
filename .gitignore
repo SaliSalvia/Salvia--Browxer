@@ -1,0 +1,25 @@
+# Node / web
+node_modules/
+dist/
+*.log
+.env
+.env.*
+
+# The web bundle is generated into the Android assets by the build (see .github/workflows)
+app/src/main/assets/www/
+
+# Gradle / Android
+.gradle/
+build/
+local.properties
+captures/
+.cxx/
+*.iml
+.idea/
+*.apk
+*.aab
+
+# Release signing material must never be committed (the shared debug keystore is the exception)
+*.jks
+*.keystore
+!app/debug.keystore

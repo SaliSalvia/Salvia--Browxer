@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SalviaBrowxer</string>
+    <string name="channel_downloads_name">Downloads</string>
+    <string name="channel_downloads_desc">Active media and file downloads</string>
+    <string name="no_app_found">No app can open this link</string>
+    <string name="notification_action_pause">Pause</string>
+    <string name="notification_action_resume">Resume</string>
+    <string name="notification_action_cancel">Cancel</string>
+    <string name="download_paused_wifi">Waiting for Wi-Fi</string>
+    <string name="download_complete">Download complete</string>
+    <string name="download_failed">Download failed</string>
+    <string name="download_insufficient_space">Not enough storage space</string>
+    <string name="download_tap_to_open">Tap to open</string>
+</resources>

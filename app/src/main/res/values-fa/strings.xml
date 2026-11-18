@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">سالویا براوزر</string>
+    <string name="channel_downloads_name">دانلودها</string>
+    <string name="channel_downloads_desc">دانلودهای فعال رسانه و فایل</string>
+    <string name="no_app_found">برنامه‌ای برای باز کردن این لینک پیدا نشد</string>
+    <string name="notification_action_pause">توقف</string>
+    <string name="notification_action_resume">ادامه</string>
+    <string name="notification_action_cancel">لغو</string>
+    <string name="download_paused_wifi">در انتظار Wi-Fi</string>
+    <string name="download_complete">دانلود کامل شد</string>
+    <string name="download_failed">دانلود ناموفق بود</string>
+    <string name="download_insufficient_space">فضای ذخیره‌سازی کافی نیست</string>
+    <string name="download_tap_to_open">برای باز کردن ضربه بزنید</string>
+</resources>
