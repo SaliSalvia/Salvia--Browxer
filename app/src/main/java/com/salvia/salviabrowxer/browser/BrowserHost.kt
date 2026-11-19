@@ -1389,7 +1389,7 @@ class BrowserHost(
     }
 
     companion object {
-        private const val MAX_TABS = 5
+        private const val MAX_TABS = 8
         private const val PRIVATE_PROFILE_NAME = "salvia_private"
     }
 }

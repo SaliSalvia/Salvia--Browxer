@@ -1,6 +1,6 @@
 name: Build APK
 
-# Builds the web UI (Vite) into the Android assets, then builds the Android app and publishes
+# Builds the Android app (Kotlin + Jetpack Compose) and publishes
 # the APK as a workflow artifact on every push. Pushing a tag like v1.0.0 also attaches the APK
 # to a GitHub Release, which is the easiest way to download it from a phone / Termux.
 
