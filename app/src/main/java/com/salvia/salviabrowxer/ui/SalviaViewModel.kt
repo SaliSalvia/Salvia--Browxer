@@ -23,6 +23,7 @@ import com.salvia.salviabrowxer.core.DownloadFileResolver
 import com.salvia.salviabrowxer.core.LockoutPolicy
 import com.salvia.salviabrowxer.core.MainContentSelector
 import com.salvia.salviabrowxer.core.MediaFormatters
+import com.salvia.salviabrowxer.core.MediaOfferability
 import com.salvia.salviabrowxer.core.MediaProbeAndExtract
 import com.salvia.salviabrowxer.core.MediaUrlRules
 import com.salvia.salviabrowxer.core.NativeProxyClient
