@@ -45,6 +45,7 @@ object SitePermissionStore {
                 tmp.delete()
             }
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("SitePermissionStore", ignored)
         }
     }
 

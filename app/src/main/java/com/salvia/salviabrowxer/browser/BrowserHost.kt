@@ -254,6 +254,7 @@ class BrowserHost(
                 )
             }
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
         }
         routing?.hotRects = list
     }
@@ -312,6 +313,7 @@ class BrowserHost(
         try {
             cb?.onCustomViewHidden()
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
         }
         setSystemBarsHidden(false)
         return true
@@ -333,6 +335,7 @@ class BrowserHost(
             val attrs = android.print.PrintAttributes.Builder().build()
             printManager.print(jobName, adapter, attrs)
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
         }
     }
 
@@ -342,26 +345,31 @@ class BrowserHost(
             CookieManager.getInstance().removeAllCookies(null)
             CookieManager.getInstance().removeSessionCookies(null)
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
         }
         try {
             WebStorage.getInstance().deleteAllData()
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
         }
         try {
             val db = WebViewDatabase.getInstance(activity)
             db.clearFormData()
             db.clearHttpAuthUsernamePassword()
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
         }
         try {
             GeolocationPermissions.getInstance().clearAll()
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
         }
         for (tab in tabs.values) {
             try {
                 tab.webView.clearCache(true)
                 tab.webView.clearHistory()
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
             }
         }
         SitePermissionStore.clear(activity)
@@ -392,6 +400,7 @@ class BrowserHost(
             try {
                 WebSettingsCompat.setAlgorithmicDarkeningAllowed(s, darkPages)
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
             }
         }
     }
@@ -443,6 +452,7 @@ class BrowserHost(
                 ProfileStore.getInstance().getOrCreateProfile(PRIVATE_PROFILE_NAME)
                 WebViewCompat.setProfile(wv, PRIVATE_PROFILE_NAME)
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
             }
         }
 
@@ -554,6 +564,7 @@ class BrowserHost(
             try {
                 WebViewCompat.addDocumentStartJavaScript(wv, BrowserDetectorScript.SOURCE, setOf("*"))
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
             }
         }
 
@@ -585,6 +596,7 @@ class BrowserHost(
             tab.webView.removeJavascriptInterface("SalviaBrowserBridge")
             tab.webView.destroy()
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
         }
         if (tabs.values.none { it.isPrivate }) {
             wipePrivateProfileIfIdle()
@@ -598,6 +610,7 @@ class BrowserHost(
             profile.cookieManager?.removeAllCookies(null)
             profile.webStorage?.deleteAllData()
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
         }
     }
 
@@ -713,6 +726,7 @@ class BrowserHost(
                     )
                 }
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
             }
         }
     }
@@ -739,6 +753,7 @@ class BrowserHost(
                 controller.show(WindowInsetsCompat.Type.systemBars())
             }
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
         }
     }
 
@@ -847,6 +862,7 @@ class BrowserHost(
                     }
                     confirmExternal(target, url)
                 } catch (ignored: Exception) {
+                com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
                 }
                 return true
             }
@@ -1055,6 +1071,7 @@ class BrowserHost(
             try {
                 if (grant) request.grant(resources) else request.deny()
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
             }
         }
 
@@ -1217,6 +1234,7 @@ class BrowserHost(
                     container.removeView(temp)
                     temp.destroy()
                 } catch (ignored: Exception) {
+                com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
                 }
             }
             temp.webViewClient = object : WebViewClient() {
@@ -1384,12 +1402,13 @@ class BrowserHost(
                     }
                 }
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("BrowserHost", ignored)
             }
         }
     }
 
     companion object {
-        private const val MAX_TABS = 5
+        private const val MAX_TABS = 8
         private const val PRIVATE_PROFILE_NAME = "salvia_private"
     }
 }

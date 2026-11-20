@@ -112,6 +112,7 @@ class AppStateRepository(private val context: Context) {
                 tmp.delete()
             }
         } catch (_: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("AppStateRepository", "state save failed")
         }
     }
 

@@ -48,6 +48,7 @@ object NativeProxyClient {
                 .replace(" Mobile Safari", " Safari")
             if (desktop.startsWith("Mozilla/") && desktop != mobile) DESKTOP_UA = desktop
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("NativeProxyClient", ignored)
         }
     }
 
@@ -75,6 +76,7 @@ object NativeProxyClient {
                     cm.setCookie(urlStr, cookie.toString())
                 }
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("NativeProxyClient", ignored)
             }
         }
 
@@ -363,6 +365,7 @@ object NativeProxyClient {
                             }
                         }
                     } catch (ignored: Exception) {
+                    com.salvia.salviabrowxer.core.SalviaLog.w("NativeProxyClient", ignored)
                     }
                 }
 
@@ -419,6 +422,7 @@ object NativeProxyClient {
                     out[abs] = "DOM"
                 }
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("NativeProxyClient", ignored)
             }
         }
         val ogVideoRegex = Regex(
@@ -432,6 +436,7 @@ object NativeProxyClient {
                     out[abs] = "DOM"
                 }
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("NativeProxyClient", ignored)
             }
         }
     }

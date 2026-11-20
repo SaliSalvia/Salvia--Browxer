@@ -49,6 +49,7 @@ object RangeChunkPlanner {
                     try {
                         urls.add(base.resolve(mapUri).toString())
                     } catch (ignored: Exception) {
+                    com.salvia.salviabrowxer.core.SalviaLog.w("RangeChunkPlanner", ignored)
                     }
                 }
                 continue
@@ -57,6 +58,7 @@ object RangeChunkPlanner {
             try {
                 urls.add(base.resolve(line).toString())
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("RangeChunkPlanner", ignored)
             }
         }
         return urls
@@ -89,6 +91,7 @@ object RangeChunkPlanner {
                         bestUrl = resolved
                     }
                 } catch (ignored: Exception) {
+                com.salvia.salviabrowxer.core.SalviaLog.w("RangeChunkPlanner", ignored)
                 }
             }
         }

@@ -513,6 +513,7 @@ object MediaProbeAndExtract {
                             }
                         }
                     } catch (_: Exception) {
+                    com.salvia.salviabrowxer.core.SalviaLog.w("MediaProbeAndExtract", _)
                     }
                 }
 

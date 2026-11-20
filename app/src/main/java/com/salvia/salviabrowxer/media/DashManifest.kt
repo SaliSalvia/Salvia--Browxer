@@ -85,6 +85,7 @@ object DashManifestParser {
             try {
                 factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("DashManifest", ignored)
             }
             val doc = factory.newDocumentBuilder().parse(ByteArrayInputStream(xmlText.toByteArray(Charsets.UTF_8)))
             doc.documentElement

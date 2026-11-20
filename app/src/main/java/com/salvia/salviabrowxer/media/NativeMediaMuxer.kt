@@ -61,6 +61,7 @@ object NativeMediaMuxer {
             try {
                 extractor.release()
             } catch (ignored: Exception) {
+                com.salvia.salviabrowxer.core.SalviaLog.w("NativeMediaMuxer", ignored)
             }
         }
     }
@@ -124,6 +125,7 @@ object NativeMediaMuxer {
             try {
                 muxer?.release()
             } catch (ignored2: Exception) {
+                com.salvia.salviabrowxer.core.SalviaLog.w("NativeMediaMuxer", ignored2)
             }
             outputFile.delete()
             return false
@@ -131,14 +133,17 @@ object NativeMediaMuxer {
             try {
                 muxer?.release()
             } catch (ignored: Exception) {
+                com.salvia.salviabrowxer.core.SalviaLog.w("NativeMediaMuxer", ignored)
             }
             try {
                 videoExtractor.release()
             } catch (ignored: Exception) {
+                com.salvia.salviabrowxer.core.SalviaLog.w("NativeMediaMuxer", ignored)
             }
             try {
                 audioExtractor?.release()
             } catch (ignored: Exception) {
+                com.salvia.salviabrowxer.core.SalviaLog.w("NativeMediaMuxer", ignored)
             }
         }
     }

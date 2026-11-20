@@ -157,6 +157,7 @@ object HlsKeyParser {
                 discontinuity = false
                 sequence++
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("HlsKeyParser", ignored)
             }
         }
         return entries
