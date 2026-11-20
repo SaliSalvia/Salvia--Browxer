@@ -317,6 +317,7 @@ class NativeDownloadService : Service() {
             cm.registerDefaultNetworkCallback(callback)
             networkCallback = callback
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("NativeDownloadService", ignored)
         }
     }
 
@@ -326,6 +327,7 @@ class NativeDownloadService : Service() {
                 getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(it)
             }
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("NativeDownloadService", ignored)
         }
         networkCallback = null
     }
@@ -548,6 +550,7 @@ class NativeDownloadService : Service() {
             File(cacheDir, "hls_$safe").deleteRecursively()
             File(cacheDir, "dash_$safe").deleteRecursively()
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("NativeDownloadService", ignored)
         }
     }
 
@@ -1204,6 +1207,7 @@ class NativeDownloadService : Service() {
                 builder.header(key, value)
             }
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("NativeDownloadService", ignored)
         }
         for ((key, value) in job.headers) {
             builder.header(key, value)
@@ -1363,6 +1367,7 @@ class NativeDownloadService : Service() {
                     .build()
             )
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("NativeDownloadService", ignored)
         }
     }
 
@@ -1379,6 +1384,7 @@ class NativeDownloadService : Service() {
                     .build()
             )
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("NativeDownloadService", ignored)
         }
     }
 
@@ -1516,6 +1522,7 @@ class NativeDownloadService : Service() {
                     context.startService(intent)
                 }
             } catch (ignored: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("NativeDownloadService", ignored)
             }
         }
 
