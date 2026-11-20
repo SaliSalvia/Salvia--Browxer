@@ -147,6 +147,7 @@ object MediaSniffer {
                         )
                     )
                 } catch (ignored: Exception) {
+                com.salvia.salviabrowxer.core.SalviaLog.w("MediaSniffer", ignored)
                 }
             }
         }

@@ -57,6 +57,7 @@ object DownloadQueueStore {
                 tmp.delete()
             }
         } catch (ignored: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("DownloadQueueStore", ignored)
         }
     }
 

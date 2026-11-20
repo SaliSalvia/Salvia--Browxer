@@ -22,6 +22,7 @@ class SalviaApplication : Application() {
                 .getString("download_tree_uri", null)
             MediaPublisher.downloadTreeUri = raw?.let { Uri.parse(it) }
         } catch (_: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("SalviaApplication", _)
         }
     }
 
