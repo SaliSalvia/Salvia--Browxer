@@ -1,12 +1,12 @@
-# Node / web
+# App-generated web payload (kept ignored for local dev artifacts)
+app/src/main/assets/www/
+
+# Local JS/TS tooling (historical)
 node_modules/
 dist/
 *.log
 .env
 .env.*
-
-# The web bundle is generated into the Android assets by the build (see .github/workflows)
-app/src/main/assets/www/
 
 # Gradle / Android
 .gradle/
