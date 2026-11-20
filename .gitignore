@@ -22,4 +22,5 @@ captures/
 # Release signing material must never be committed (the shared debug keystore is the exception)
 *.jks
 *.keystore
+*.b64
 !app/debug.keystore
