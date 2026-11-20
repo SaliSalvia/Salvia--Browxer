@@ -84,6 +84,7 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
                         Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                     )
                 } catch (_: Exception) {
+                com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
                 }
                 getSharedPreferences(DOWNLOAD_PREFS, MODE_PRIVATE)
                     .edit()
@@ -110,6 +111,7 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
         try {
             WebViewCompat.startSafeBrowsing(this, null)
         } catch (_: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
         }
 
         browserContainer = FrameLayout(this).apply {
@@ -204,6 +206,7 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
                 )
             }
         } catch (_: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
         }
     }
 
@@ -228,6 +231,7 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
                 try {
                     previous.onReceiveValue(null)
                 } catch (_: Exception) {
+                com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
                 }
             }
             val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
@@ -242,6 +246,7 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
             try {
                 callback.onReceiveValue(null)
             } catch (_: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
             }
             false
         }
@@ -307,6 +312,7 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
         try {
             folderPickerLauncher.launch(null)
         } catch (_: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
         }
     }
 
@@ -321,6 +327,7 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
             val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
             cm.setPrimaryClip(ClipData.newPlainText("url", text))
         } catch (_: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
         }
     }
 
@@ -333,6 +340,7 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
             }
             startActivity(Intent.createChooser(intent, title.ifBlank { url }))
         } catch (_: Exception) {
+        com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
         }
     }
 
