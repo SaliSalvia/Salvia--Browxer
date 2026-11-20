@@ -21,8 +21,8 @@ class SalviaApplication : Application() {
             val raw = getSharedPreferences("salvia_prefs", MODE_PRIVATE)
                 .getString("download_tree_uri", null)
             MediaPublisher.downloadTreeUri = raw?.let { Uri.parse(it) }
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("SalviaApplication", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("SalviaApplication", e)
         }
     }
 

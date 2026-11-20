@@ -212,8 +212,8 @@ class SalviaViewModel(application: Application) : AndroidViewModel(application) 
 
         try {
             connectivityManager.registerDefaultNetworkCallback(networkCallback)
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", e)
         }
 
         silentStartupUpdateCheckIfNeeded()
@@ -386,8 +386,8 @@ class SalviaViewModel(application: Application) : AndroidViewModel(application) 
             val extracted = AddressBarResolver.extractFirstSharedUrl(text) ?: return
             val kind = PastedLinkClassifier.classifyPastedLink(extracted) ?: return
             _uiState.update { it.copy(clipboardPrompt = ClipboardPrompt(extracted, kind)) }
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", e)
         }
     }
 
@@ -1420,8 +1420,8 @@ class SalviaViewModel(application: Application) : AndroidViewModel(application) 
                 .forEach { file ->
                     if (file.isDirectory) file.deleteRecursively() else file.delete()
                 }
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", e)
         }
         _uiState.update { st ->
             val nextPlayer = if (st.playerDownloadId == id) null else st.playerDownloadId
@@ -1450,7 +1450,7 @@ class SalviaViewModel(application: Application) : AndroidViewModel(application) 
                     .forEach { file ->
                         if (file.isDirectory) file.deleteRecursively() else file.delete()
                     }
-            } catch (_: Exception) { com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", _) }
+            } catch (e: Exception) { com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", e) }
         }
         _uiState.update { st -> st.copy(downloads = st.downloads.filterNot(predicate)) }
         persist()
@@ -1507,8 +1507,8 @@ class SalviaViewModel(application: Application) : AndroidViewModel(application) 
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             appContext.startActivity(Intent.createChooser(intent, item.title).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", e)
         }
     }
 
@@ -1530,8 +1530,8 @@ class SalviaViewModel(application: Application) : AndroidViewModel(application) 
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             appContext.startActivity(intent)
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", e)
         }
     }
 
@@ -1824,8 +1824,8 @@ class SalviaViewModel(application: Application) : AndroidViewModel(application) 
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             appContext.startActivity(Intent.createChooser(intent, t("settings_share_diagnostics")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", e)
         }
     }
 
@@ -1844,8 +1844,8 @@ class SalviaViewModel(application: Application) : AndroidViewModel(application) 
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             appContext.startActivity(Intent.createChooser(intent, t("settings_crash_reports")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", e)
         }
     }
 
@@ -1897,8 +1897,8 @@ class SalviaViewModel(application: Application) : AndroidViewModel(application) 
         NativeDownloadBus.listener = null
         try {
             connectivityManager.unregisterNetworkCallback(networkCallback)
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("SalviaViewModel", e)
         }
         super.onCleared()
     }

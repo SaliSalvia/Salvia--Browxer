@@ -512,8 +512,8 @@ object MediaProbeAndExtract {
                                 collectUrlsFromHtml(iRes.body?.string().orEmpty(), iRes.request.url.toString(), found)
                             }
                         }
-                    } catch (_: Exception) {
-                    com.salvia.salviabrowxer.core.SalviaLog.w("MediaProbeAndExtract", _)
+                    } catch (e: Exception) {
+                        com.salvia.salviabrowxer.core.SalviaLog.w("MediaProbeAndExtract", e)
                     }
                 }
 

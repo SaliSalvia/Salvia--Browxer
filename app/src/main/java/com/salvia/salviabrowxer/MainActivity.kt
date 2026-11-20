@@ -83,8 +83,8 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
                         uri,
                         Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                     )
-                } catch (_: Exception) {
-                com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
+                } catch (e: Exception) {
+                    com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", e)
                 }
                 getSharedPreferences(DOWNLOAD_PREFS, MODE_PRIVATE)
                     .edit()
@@ -110,8 +110,8 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
 
         try {
             WebViewCompat.startSafeBrowsing(this, null)
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", e)
         }
 
         browserContainer = FrameLayout(this).apply {
@@ -205,8 +205,8 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
                         .build()
                 )
             }
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", e)
         }
     }
 
@@ -230,8 +230,8 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
             if (previous != null) {
                 try {
                     previous.onReceiveValue(null)
-                } catch (_: Exception) {
-                com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
+                } catch (e: Exception) {
+                    com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", e)
                 }
             }
             val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
@@ -245,8 +245,8 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
             fileChooserCallback = null
             try {
                 callback.onReceiveValue(null)
-            } catch (_: Exception) {
-            com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
+            } catch (e: Exception) {
+                com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", e)
             }
             false
         }
@@ -311,8 +311,8 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
     private fun pickDownloadFolder() {
         try {
             folderPickerLauncher.launch(null)
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", e)
         }
     }
 
@@ -326,8 +326,8 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
         try {
             val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
             cm.setPrimaryClip(ClipData.newPlainText("url", text))
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", e)
         }
     }
 
@@ -339,8 +339,8 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
                 putExtra(Intent.EXTRA_TEXT, url)
             }
             startActivity(Intent.createChooser(intent, title.ifBlank { url }))
-        } catch (_: Exception) {
-        com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", _)
+        } catch (e: Exception) {
+            com.salvia.salviabrowxer.core.SalviaLog.w("MainActivity", e)
         }
     }
 

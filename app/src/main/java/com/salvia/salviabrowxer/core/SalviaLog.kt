@@ -22,6 +22,9 @@ object SalviaLog {
     @Volatile
     var sink: ((Entry) -> Unit)? = null
 
+    /** Ring buffer holding the most recent [MAX_ENTRIES] events. */
+    private val buffer = ArrayDeque<Entry>()
+
     fun w(source: String, error: Throwable) {
         add("WARN", source, (error.javaClass.name + ": " + (error.message ?: "")).take(600))
     }
