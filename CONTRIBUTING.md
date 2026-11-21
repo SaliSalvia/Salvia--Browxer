@@ -19,10 +19,10 @@ do. Contributions are judged against those refusals as much as against the code.
 
 - `./gradlew :app:testDebugUnitTest` (or the CI run) must be green. `--continue` keeps the whole
   report even when a module fails — read it as evidence, not noise.
-- `node --test scripts/test-media-sniffer.cjs` must stay green. It is the only test that runs
-  without a JDK, and it guards the injected sniffer script.
-- `node --test` also parses the media rules out of `MediaUrlRules.kt`; if you change rule sets,
-  both languages of the truth (Kotlin and the injected JavaScript) must change together.
+- The 26 JVM tests cover the pure rules and parsers only. The injected sniffer script has no
+  automated test: when you change a rule, `browser/BrowserDetectorScript.kt` (JavaScript) and
+  `core/AppDomainLogic.kt` (Kotlin) must change together, and the result has to be re-checked on a
+  device with `docs/TEST-SITES.md`.
 - New user-visible strings go into **both** `values/strings.xml` and `values-fa/strings.xml`.
   The key sets are kept 100% identical on purpose.
 - Kotlin style: match the file you are editing. Comments explain *why*, and the repository's

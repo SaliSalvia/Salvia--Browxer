@@ -1,8 +1,8 @@
 name: Build APK
 
-# Builds the Android app (Kotlin + Jetpack Compose) and publishes
-# the APK as a workflow artifact on every push. Pushing a tag like v1.0.0 also attaches the APK
-# to a GitHub Release, which is the easiest way to download it from a phone / Termux.
+# Unit tests and the R8 (minified + shrunk) release build are gates, not advisories: a red test or a
+# release build that R8 breaks fails the run. The debug APK is built alongside for daily installs,
+# and a `v*` tag also publishes both APKs as a GitHub Release (the easiest way to grab them on a phone).
 
 on:
   push:
@@ -22,18 +22,18 @@ defaults:
     shell: bash     # adds -eo pipefail, so `gradlew | tee` fails the step when gradlew fails
 
 jobs:
-  apk:
-    name: Build APK
+  # ---------------------------------------------------------------------------------------------
+  # 1. Unit tests. Everything below waits for this job, so nothing is packaged from untested code.
+  # ---------------------------------------------------------------------------------------------
+  unit-tests:
+    name: Unit tests (JVM)
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      HAS_SIGNING: ${{ secrets.SIGNING_KEYSTORE_BASE64 != '' }}
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ---------- Android ----------
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -50,8 +50,203 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
+      # The five suites (AppDomainLogic, DashManifest, DownloadPlanner, MediaSniffer, SidxParser)
+      # cover the pure JVM half of the app: URL/format rules, main-candidate scoring, HLS/DASH
+      # parsing, sidx/byte-range planning and download naming. 26 cases total.
       - name: Run unit tests
         run: ./gradlew :app:testDebugUnitTest --stacktrace --no-daemon 2>&1 | tee gradle-test.log
+
+      - name: Unit test summary
+        if: always()
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import glob, xml.etree.ElementTree as ET
+          tests = failures = errors = skipped = 0
+          files = sorted(glob.glob("app/build/test-results/testDebugUnitTest/*.xml"))
+          for path in files:
+              root = ET.parse(path).getroot()
+              tests += int(root.get("tests") or 0)
+              failures += int(root.get("failures") or 0)
+              errors += int(root.get("errors") or 0)
+              skipped += int(root.get("skipped") or 0)
+          print("## Unit tests")
+          print()
+          if files:
+              print(f"| Suites | Tests | Failures | Errors | Skipped |")
+              print("|---|---|---|---|---|")
+              print(f"| {len(files)} | {tests} | {failures} | {errors} | {skipped} |")
+          else:
+              print("No JUnit XML reports were produced - the test task did not run.")
+          PY
+
+      - name: Upload unit test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: |
+            app/build/reports/tests/**
+            app/build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Surface Gradle errors
+        if: failure()
+        run: |
+          for log in gradle-*.log; do
+            [ -f "$log" ] || continue
+            echo "----- $log -----"
+            grep -hE '^e: |error: |FAILURE:|What went wrong|Could not resolve|> Task .* FAILED' "$log" | head -60 | while IFS= read -r line; do
+              line="${line//'%'/'%25'}"
+              echo "::error title=$log::$line"
+            done
+          done
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: gradle-*.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------------------------
+  # 2. Release APK with R8. `isMinifyEnabled`/`isShrinkResources` are on in app/build.gradle.kts, so
+  # this job is the only place that proves the app survives minification: the keep rules for
+  # @JavascriptInterface and BrowserHost$DetectorBridge matter at runtime, not at compile time.
+  # ---------------------------------------------------------------------------------------------
+  release-apk:
+    name: Release APK (R8 + shrink)
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Install Android SDK packages
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" || echo "sdkmanager failed (non-fatal, Gradle can fetch missing packages itself)"
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build release APK (R8)
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          SIGNING_KEYSTORE_PASSWORD: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: ./gradlew :app:assembleRelease --stacktrace --no-daemon 2>&1 | tee gradle-release.log
+
+      # A release build that produced no APK is a failure, not a warning: minification either worked
+      # or the artifact does not exist.
+      - name: Verify the R8 output
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/release/app-release.apk
+          MAPPING=app/build/outputs/mapping/release/mapping.txt
+
+          test -f "$APK" || { echo "::error title=Release APK::assembleRelease finished but $APK does not exist"; exit 1; }
+          test -s "$MAPPING" || { echo "::error title=R8 mapping::No mapping file at $MAPPING - R8 did not run"; exit 1; }
+
+          # BrowserHost$DetectorBridge is the only class the injected page script may call. If R8
+          # renamed it or its `report` method, media detection silently stops working on device,
+          # and nothing in the JVM tests can notice that. Check the class block, not the whole file:
+          # the mapping names half a million members and `report` on its own matches elsewhere.
+          grep -q 'com\.salvia\.salviabrowxer\.browser\.BrowserHost\$DetectorBridge -> com\.salvia\.salviabrowxer\.browser\.BrowserHost\$DetectorBridge:' "$MAPPING" \
+            || { echo "::error title=R8 keep rules::BrowserHost\$DetectorBridge is not identity-mapped - it was renamed or removed"; exit 1; }
+          awk '/BrowserHost\$DetectorBridge ->/{f=1;next} f&&/^[^ #]/{exit} f' "$MAPPING" | grep -q ' -> report$' \
+            || { echo "::error title=R8 keep rules::DetectorBridge.report is missing from mapping.txt - the JS bridge would break on device"; exit 1; }
+
+          APKSIGNER="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/apksigner"
+          "$APKSIGNER" verify --print-certs "$APK" | tee gradle-signature.log
+
+          mkdir -p out
+          cp "$APK" out/SalviaBrowxer-release.apk
+          cp "$MAPPING" out/mapping.txt
+          ls -l out
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SalviaBrowxer-release-apk
+          path: out/SalviaBrowxer-release.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      # The mapping file is what turns a crash stack from a release build back into class and method
+      # names, so it is kept with the APK it belongs to.
+      - name: Upload R8 mapping
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-r8-mapping
+          path: out/mapping.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Surface Gradle errors
+        if: failure()
+        run: |
+          for log in gradle-*.log; do
+            [ -f "$log" ] || continue
+            echo "----- $log -----"
+            grep -hE '^e: |error: |FAILURE:|What went wrong|Could not resolve|> Task .* FAILED|Missing class' "$log" | head -60 | while IFS= read -r line; do
+              line="${line//'%'/'%25'}"
+              echo "::error title=$log::$line"
+            done
+          done
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-logs
+          path: |
+            gradle-*.log
+            app/build/outputs/mapping/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------------------------
+  # 3. Debug APK - unminified, faster to build, what gets installed over the previous run.
+  # ---------------------------------------------------------------------------------------------
+  debug-apk:
+    name: Debug APK
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Install Android SDK packages
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" || echo "sdkmanager failed (non-fatal, Gradle can fetch missing packages itself)"
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
 
       - name: Build debug APK
         run: ./gradlew :app:assembleDebug --stacktrace --no-daemon 2>&1 | tee gradle-debug.log
@@ -70,45 +265,61 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Build release APK (R8, advisory)
-        id: release
-        continue-on-error: true
-        env:
-          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
-          SIGNING_KEYSTORE_PASSWORD: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
-          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      - name: Surface Gradle errors
+        if: failure()
         run: |
-          ./gradlew :app:assembleRelease --stacktrace --no-daemon 2>&1 | tee gradle-release.log
-          cp app/build/outputs/apk/release/app-release.apk out/SalviaBrowxer-release.apk
+          [ -f gradle-debug.log ] || exit 0
+          grep -hE '^e: |error: |FAILURE:|What went wrong|Could not resolve|> Task .* FAILED' gradle-debug.log | head -60 | while IFS= read -r line; do
+            line="${line//'%'/'%25'}"
+            echo "::error title=gradle-debug.log::$line"
+          done
 
-      - name: Upload release APK
-        if: steps.release.outcome == 'success'
+      - name: Upload build logs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: SalviaBrowxer-release-apk
-          path: out/SalviaBrowxer-release.apk
-          if-no-files-found: error
-          retention-days: 30
+          name: debug-logs
+          path: gradle-*.log
+          if-no-files-found: ignore
+          retention-days: 7
 
-      - name: Note release build failure
-        if: steps.release.outcome == 'failure'
-        run: echo "::warning title=Release APK::assembleRelease failed (R8/shrink). The debug APK is unaffected - see the build-logs artifact."
+  # ---------------------------------------------------------------------------------------------
+  # 4. Release publishing (tag pushes only), after both APKs exist.
+  # ---------------------------------------------------------------------------------------------
+  publish-release:
+    name: Publish GitHub Release
+    needs: [release-apk, debug-apk]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Job-scoped, not workflow-scoped: a `secrets` reference is only resolved inside a job that
+    # actually uses it, so this flag is evaluated in the same scope that reads it below.
+    env:
+      HAS_SIGNING: ${{ secrets.SIGNING_KEYSTORE_BASE64 != '' }}
 
-      - name: Publish GitHub Release (tag pushes only)
-        if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download built APKs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: SalviaBrowxer-*-apk
+          merge-multiple: true
+          path: out
+
+      - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" out/*.apk \
+          cd out && ls -l
+          gh release create "$GITHUB_REF_NAME" ./*.apk \
+            --repo "$GITHUB_REPOSITORY" \
             --title "SalviaBrowxer $GITHUB_REF_NAME" --generate-notes \
-            || gh release upload "$GITHUB_REF_NAME" out/*.apk --clobber
+            || gh release upload "$GITHUB_REF_NAME" ./*.apk --clobber --repo "$GITHUB_REPOSITORY"
 
       - name: Job summary
         if: always()
         run: |
           {
-            echo "## SalviaBrowxer APK build"
+            echo "## SalviaBrowxer $GITHUB_REF_NAME"
             echo
             if ls out/*.apk > /dev/null 2>&1; then
               echo "| File | Size | SHA-256 |"
@@ -116,38 +327,9 @@ jobs:
               for f in out/*.apk; do
                 echo "| $(basename "$f") | $(du -h "$f" | cut -f1) | \`$(sha256sum "$f" | cut -c1-16)…\` |"
               done
+            fi
+            if [ "${HAS_SIGNING}" != "true" ]; then
               echo
-              echo "Download the APK from the **Artifacts** section of this run"
-              echo "(or from the Release page when the run was triggered by a \`v*\` tag)."
-              if [ "${HAS_SIGNING}" != "true" ]; then
-                echo
-                echo "_Release APK is signed with the shared debug key (no signing secrets configured)._"
-              fi
-            else
-              echo "No APK was produced - see the failed step and the error annotations."
+              echo "_Release APK is signed with the shared debug key (no signing secrets configured). It installs, but it is not Play-Store ready._"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
-
-      # ---------- Diagnostics ----------
-      - name: Surface Gradle errors
-        if: failure()
-        run: |
-          for log in gradle-debug.log gradle-release.log gradle-test.log; do
-            [ -f "$log" ] || continue
-            echo "----- $log -----"
-            grep -hE '^e: |error: |FAILURE:|What went wrong|Could not resolve|> Task .* FAILED' "$log" | head -60 | while IFS= read -r line; do
-              line="${line//'%'/'%25'}"
-              echo "::error title=$log::$line"
-            done
-          done
-
-      - name: Upload build logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-logs
-          path: |
-            gradle-*.log
-            app/build/reports/**
-          if-no-files-found: ignore
-          retention-days: 7
