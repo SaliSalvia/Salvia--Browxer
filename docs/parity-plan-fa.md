@@ -1,5 +1,11 @@
 # نقشهٔ راه: رسیدن به «قدرت تشخیص و دانلود» در حد InShot Video Downloader
 
+> **Reality check (2026-11-21):** ستون‌های «✅ انجام شد (F1…F5)» در این سند به کدی اشاره می‌کنند که در
+> درخت فعلی نیست (`DownloadWorkQueue`/`SlotLimiter`/صف Room، `SessionCookieJar`، ضبط MSE/blob،
+> `TranscodePlan`+`VideoTranscoder`، `DestinationPolicy`+`SafDocumentExporter`، `PasswordVault`،
+> `FormatListParityTest` و کل `androidTest`). این سطرها را تاریخچهٔ یک تلاش قبلی بخوانید، نه وضعیت
+> امروز. آنچه واقعاً پیاده شده در `docs/agent-handoff.md` و `README.md` فهرست شده است.
+
 > ادامهٔ `docs/analysis-fa.md`. آن سند گفت *الان کجا هستیم*؛ این سند می‌گوید *برای برابری، دقیقاً چه
 > چیزی لازم است* — و صادقانه، چه چیزی حتی در رقیب هم وجود ندارد.
 >

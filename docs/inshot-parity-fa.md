@@ -1,5 +1,17 @@
 # برابری با InShot Video Downloader — جدول شاهد‌محور
 
+> **Reality check (2026-11-21):** این جدول برای درخت کد قدیمی نوشته شده است و ستون «وضعیت ما» در
+> بسیاری از سطرها به کلاس‌هایی اشاره می‌کند که در این مخزن **وجود ندارند**: `PasswordVault`،
+> `DestinationPolicy`، `SafDocumentExporter`، `SlotLimiter`، `DownloadWorkQueue`، `MediaUrlRules`،
+> `FileUtils`، `TranscodePlan`، `VideoTranscoder`، `SessionCookieJar`، ضبط‌کنندهٔ MSE، و همهٔ تست‌های
+> `androidTest` (`FormatListParityTest`، `VideoTranscoderInstrumentedTest`، `EncryptedHlsInstrumentedTest`،
+> `SafMoveInstrumentedTest`، `WebViewInterceptionInstrumentedTest`).
+>
+> وضعیت واقعی امروز، برای استناد: یک ماژول `:app` با مرورگر WebView چندتب، چهار لایهٔ تشخیص
+> (`browser/MediaSniffer`، `core/MediaProber`، `browser/BrowserDetectorScript`، `core/MediaProbeAndExtract`)،
+> و `service/NativeDownloadService` با دانلود چنداتصالی، HLS (AES-128، `EXT-X-BYTERANGE`، `EXT-X-MAP`)
+> و DASH ایستا. نقشهٔ کد واقعی: `docs/agent-handoff.md`. هیچ‌کدام از این‌ها روی دستگاه واقعی سنجیده نشده.
+
 > **قاعدهٔ این سند.** هر چیزی که دربارهٔ رقیب می‌گوید، یک **شاهد عمومی** دارد که همان‌جا نوشته شده:
 > توضیح رسمی فروشگاه، صفحهٔ اپ در یک فروشگاه معتبر، یا نقد منتشرشده. باینری رقیب در هیچ مرحله‌ای
 > باز، دیکامپایل یا اجرا نشده است. هر جا شاهدی پیدا نشد، خودِ همین جمله در جدول آمده — «شاهد پیدا
