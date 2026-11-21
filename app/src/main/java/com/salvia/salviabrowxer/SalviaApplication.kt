@@ -4,7 +4,6 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.net.Uri
-import android.os.Build
 import com.salvia.salviabrowxer.core.CrashReporter
 import com.salvia.salviabrowxer.storage.MediaPublisher
 
@@ -26,19 +25,17 @@ class SalviaApplication : Application() {
         }
     }
 
+    // minSdk is 26, so NotificationChannel always exists here.
     private fun createDownloadChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_DOWNLOADS,
-                getString(R.string.channel_downloads_name),
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = getString(R.string.channel_downloads_desc)
-                setShowBadge(false)
-            }
-            val nm = getSystemService(NotificationManager::class.java)
-            nm?.createNotificationChannel(channel)
+        val channel = NotificationChannel(
+            CHANNEL_DOWNLOADS,
+            getString(R.string.channel_downloads_name),
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = getString(R.string.channel_downloads_desc)
+            setShowBadge(false)
         }
+        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
     }
 
     companion object {

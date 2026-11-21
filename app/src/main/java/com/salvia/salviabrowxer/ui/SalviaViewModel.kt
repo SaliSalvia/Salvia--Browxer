@@ -366,7 +366,8 @@ class SalviaViewModel(application: Application) : AndroidViewModel(application) 
             !isShowcaseUrl(tab.url) &&
             tab.errorText == null &&
             tab.cleartextPromptUrl == null
-        if (showNative && tab != null) {
+        // `showNative` already implies `tab != null`, so the compiler smart-casts it here.
+        if (showNative) {
             val adBlock = effectiveAdBlockForUrl(tab.url, st.settings)
             host.show(tab.id, tab.url, tab.desktopMode, adBlock, tab.isPrivate)
         } else {
@@ -1515,9 +1516,7 @@ class SalviaViewModel(application: Application) : AndroidViewModel(application) 
     fun installApk(item: DownloadItemRecord) {
         val uri = uriForDownloadItem(item) ?: return
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-                !appContext.packageManager.canRequestPackageInstalls()
-            ) {
+            if (!appContext.packageManager.canRequestPackageInstalls()) {
                 appContext.startActivity(
                     Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:${appContext.packageName}"))
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

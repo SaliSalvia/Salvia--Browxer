@@ -1,5 +1,7 @@
 # گزارش تغییرات سخت‌سازی — SalviaBrowxer
 
+> **یادداشت میراث (۲۰۲۶-۱۱-۲۱):** این سند تاریخچهٔ یک درخت کد قدیمی‌تر است. فایل‌هایی که در ادامه نام برده شده‌اند دیگر وجود ندارند: `android_ci.yml`، `apk_build.yml`، `emulator_verification.yml`، `release.yml`، `data/security/PasswordVault.kt` و اسکریپت `scripts/test-media-sniffer.cjs`. تنها workflow فعلی `.github/workflows/build-apk.yml` است و منطق PBKDF2 امروز در `core/AppDomainLogic.kt` قرار دارد. متن زیر را به‌عنوان تاریخچه بخوانید، نه وضعیت جاری.
+
 این بسته بر مبنای سورس کامل شاخهٔ `main` ساخته شده است. نسخهٔ اپ عمداً bump نشده؛ ماتریس واقعی دستگاه و تایید انتشار هنوز گیت محصول هستند.
 
 ## تغییرات

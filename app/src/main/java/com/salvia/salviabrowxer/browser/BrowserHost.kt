@@ -339,7 +339,13 @@ class BrowserHost(
         }
     }
 
-    /** Wipes every piece of browsing data the engine keeps (cookies, storage, cache, form data). */
+    /**
+     * Wipes every piece of browsing data the engine keeps (cookies, storage, cache, form data).
+     *
+     * The deprecated WebViewDatabase / WebSettings form APIs have no replacement and are still the
+     * only way to wipe saved form data here (no-ops on newer WebViews).
+     */
+    @Suppress("DEPRECATION")
     fun clearBrowsingData() {
         try {
             CookieManager.getInstance().removeAllCookies(null)
@@ -380,6 +386,8 @@ class BrowserHost(
 
     private fun activeTabIsPrivate(): Boolean = activeId?.let { tabs[it]?.isPrivate } == true
 
+    // `saveFormData` is deprecated but still respected by older WebViews; private tabs rely on it.
+    @Suppress("DEPRECATION")
     private fun applyTabSettings(tab: BrowserTab) {
         val s = tab.webView.settings
         s.javaScriptEnabled = jsEnabled
@@ -457,9 +465,7 @@ class BrowserHost(
         }
 
         wv.setBackgroundColor(Color.BLACK)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            wv.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES)
-        }
+        wv.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES)
         val s = wv.settings
         s.javaScriptEnabled = jsEnabled
         s.mediaPlaybackRequiresUserGesture = true

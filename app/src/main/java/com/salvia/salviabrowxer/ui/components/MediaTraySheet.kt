@@ -17,11 +17,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.AudioFile
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Movie
-import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -305,7 +305,7 @@ fun MediaTraySheet(
                                         Icon(
                                             imageVector = when (kind) {
                                                 MediaOfferability.Kind.AUDIO -> Icons.Filled.AudioFile
-                                                MediaOfferability.Kind.PLAYLIST -> Icons.Filled.PlaylistPlay
+                                                MediaOfferability.Kind.PLAYLIST -> Icons.AutoMirrored.Filled.PlaylistPlay
                                                 else -> Icons.Filled.Tune
                                             },
                                             contentDescription = t("media_open_quality", emptyArray()),

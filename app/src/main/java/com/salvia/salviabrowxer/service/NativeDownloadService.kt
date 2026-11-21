@@ -1466,11 +1466,7 @@ class NativeDownloadService : Service() {
                     putExtra(EXTRA_REFERER, referer)
                 }
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
+            context.startForegroundService(intent)
         }
 
         fun pause(context: Context, id: String) {
@@ -1498,11 +1494,7 @@ class NativeDownloadService : Service() {
                 action = ACTION_RESUME
                 putExtra(EXTRA_ID, id)
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
+            context.startForegroundService(intent)
         }
 
         /** Restores downloads that were running when the app died or the device rebooted. */
@@ -1516,11 +1508,7 @@ class NativeDownloadService : Service() {
                 val intent = Intent(context, NativeDownloadService::class.java).apply {
                     action = ACTION_RESUME_ALL
                 }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    context.startForegroundService(intent)
-                } else {
-                    context.startService(intent)
-                }
+                context.startForegroundService(intent)
             } catch (ignored: Exception) {
             com.salvia.salviabrowxer.core.SalviaLog.w("NativeDownloadService", ignored)
             }

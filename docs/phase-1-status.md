@@ -3,6 +3,13 @@
 This is an implementation status, not a release acceptance report. Version remains 1.0.0 / code 2
 per the roadmap policy: **no bump until the real-device matrix passes.**
 
+> **Reality check (2026-11-21):** written against an earlier tree. `DownloadWorkQueue`,
+> `SlotLimiter`, `scripts/test-media-sniffer.cjs`, the Robolectric/instrumented suites and the module
+> layout (`:core:*`, `:media:*`) are **not** in this repository. The current tree is a single `:app`
+> module; its test surface is the five JVM suites under `app/src/test` (26 cases) run by
+> `.github/workflows/build-apk.yml`, and the native queue lives in `service/NativeDownloadService`
+> with `service/DownloadQueueStore`. Read the rest of this file as history.
+
 ## What is implemented and covered by tests that run
 
 - **Detection and admission.** Four layers (response sniffing in `shouldInterceptRequest`, MSE/blob

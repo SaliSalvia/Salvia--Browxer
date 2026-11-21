@@ -193,9 +193,7 @@ class MainActivity : AppCompatActivity(), BrowserHostDelegate {
 
     private fun enterPipIfSupported() {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-                packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
-            ) {
+            if (packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
                 val width = window.decorView.width.coerceAtLeast(16)
                 val height = window.decorView.height.coerceAtLeast(9)
                 val rational = if (height > width) Rational(9, 16) else Rational(16, 9)

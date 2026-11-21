@@ -3,7 +3,6 @@ package com.salvia.salviabrowxer.service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 
 /**
  * Restarts downloads that were running when the device was rebooted. On Android 14+ starting a
@@ -19,11 +18,7 @@ class DownloadBootReceiver : BroadcastReceiver() {
             val service = Intent(context, NativeDownloadService::class.java).apply {
                 action = NativeDownloadService.ACTION_RESUME_ALL
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(service)
-            } else {
-                context.startService(service)
-            }
+            context.startForegroundService(service)
         } catch (ignored: Exception) {
             // Expected on Android 14+ when BOOT_COMPLETED restrictions apply; the app start
             // path (MainActivity) will pick these jobs up instead.

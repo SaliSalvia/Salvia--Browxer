@@ -96,6 +96,8 @@ object CrashReporter {
         }
     }
 
+    // `versionCode` is the only field available below API 28; longVersionCode covers the rest.
+    @Suppress("DEPRECATION")
     private fun deviceHeader(context: Context): String = buildString {
         try {
             val pm = context.packageManager.getPackageInfo(context.packageName, 0)

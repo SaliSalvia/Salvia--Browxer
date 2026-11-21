@@ -1,5 +1,26 @@
 # SalviaBrowxer — world-class release checklist
 
+> **Reality check (2026-11-21).** The P0/P1/P2 sections below were written for an earlier, much larger
+> tree (Room queue, version catalog, Robolectric/instrumented suites, a segmented DASH/HLS downloader,
+> a remuxer, a SAF destination policy, a vault). That code is **not** in this repository today; only
+> what the table below names exists. Treat every "**Shipped**" marker below as a record of that older
+> tree until it is re-verified against `app/src/main/**`.
+>
+> Present and covered by a green `testDebugUnitTest` (26 cases in 5 JVM suites) plus the R8
+> `assembleRelease` gate: WebView browsing with multi-tab hibernation and private profiles, media
+> sniffing (`browser/MediaSniffer`, `core/MediaProber`, `browser/BrowserDetectorScript`), the
+> foreground `service/NativeDownloadService` (ranged multi-connection, HLS playlist/AES-128/byterange/
+> `EXT-X-MAP`, static DASH), `storage/MediaPublisher` (SAF tree, MediaStore, legacy external path),
+> PBKDF2 locked folder + `LockoutPolicy` (`core/AppDomainLogic`), `MainContentSelector`, the Media3
+> player, and bilingual EN/FA UI (`data/Translations`).
+>
+> Absent despite being described below as shipped: `MediaStoreExporter`, `DownloadArtifactCleaner`,
+> `MediaRemuxer`, `MediaMetadataReader`, `TranscodePlan`, `VideoTranscoder`, `DestinationPolicy`,
+> `SafDocumentExporter`, `SegmentedFetcher`, `DashDownloader`, `HlsDownloader`, `DiagnosticsLog`,
+> `UpdateChecker`, `PasswordVault`, any `androidTest` source set, and
+> `.github/workflows/emulator_verification.yml` (a copy survives only in `docs/archived-workflows/`).
+> The only workflow is `.github/workflows/build-apk.yml`.
+
 Status: roadmap, **not a feature list or a claim of InShot parity**. Product requirement update:
 **no Save all**. The default download target should be the media associated with the user's
 current page/post, not every file found in a feed. Keep GPL-3.0, honest refusals and the network
